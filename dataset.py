@@ -58,23 +58,19 @@ class CommentDataset(object):
         y_pred = np.round(y_pred).astype(np.int)
         y_true = self.y_test if set=="test" else self.y_train
 
-        values = []
+        accuracy = accuracy_score(y_true, y_pred)
+        precision = precision_score(y_true, y_pred)
+        recall = recall_score(y_true, y_pred)
+        confusion = confusion_matrix(y_true, y_pred)
+        values = [accuracy, precision, recall, confusion]
 
         if "accuracy" in print_options:
-            accuracy = accuracy_score(y_true, y_pred)
-            values += accuracy
-            print "Accuracy on {} set: {}".format(set, accuracy)
+            print "\tAccuracy on {} set: {}".format(set, accuracy)
         if "precision" in print_options:
-            precision = precision_score(y_true, y_pred)
-            values += precision
-            print "Precision on {} set: {}".format(set, precision)
+            print "\tPrecision on {} set: {}".format(set, precision)
         if "recall" in print_options:
-            recall = recall_score(y_true, y_pred)
-            values += recall
-            print "Recall on {} set: {}".format(set, recall)
+            print "\tRecall on {} set: {}".format(set, recall)
         if "confusion" in print_options:
-            confusion = confusion_matrix(y_true, y_pred)
-            values += confusion 
-            print "Recall on {} set: {}".format(set, confusion)
+            print "\tConfusion matrix on {} set: {}".format(set, confusion)
 
         return values
