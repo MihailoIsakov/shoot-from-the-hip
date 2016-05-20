@@ -2,5 +2,7 @@ dataset/
 .venv/
 
 *.pyc
+*.swp
+*.swo
 
 .ipynb_checkpoints/
