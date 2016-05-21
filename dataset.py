@@ -82,6 +82,7 @@ class UnlabeledDataset(object):
         Relies on an outside vectorizer to create vectors.
         Contains 
         """
-        self._comments = comments
+        self.comments = tuple(comments)
+        self.bots = None
         self.X = None
 
