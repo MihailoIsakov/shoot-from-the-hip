@@ -75,6 +75,10 @@ class CommentDataset(object):
 
 
 class UnlabeledDataset(object):
+    """
+    Dataset containing the scraped comments, their TF-IDF sparse matrix,
+    and classified bot comments from the dataset.
+    """
 
     def __init__(self, comments):
         """
@@ -86,3 +90,39 @@ class UnlabeledDataset(object):
         self.bots = None
         self.X = None
 
+
+class CombinedDataset(object):
+    """
+    Dataset containing the original comments, scraped comments,
+    and comments tagged as not-bots, along with their labels.
+    NB classified comments and manually tagged comments have lower weights.
+    """
+
+    def __init__(self, lns_comments, lns_labels, bots, nots, weight=0.1):  
+        """
+        Creates the dataset with the original comments and labels from the training set.
+        Adds the bots and nots to the comments, and labels bots with 1s, and nots with 0s.
+        """
+        self._lns_comments = lns_comments
+        self._lns_labels = lns_labels
+        self._bots = bots  
+        self._nots = nots  
+
+        self._comments = self._lns_comments + bots + nots
+        self._labels = list(self._lns_labels) + list(np.ones(len(bots))) + list(np.zeros(len(nots)))
+        self._labels = np.array(self.labels)
+
+        self._weights = np.ones(len(self._comments))
+        self._weights[len(lns_comments):] = weight
+
+    @property
+    def comments(self):
+        return self._comments
+
+    @property
+    def labels(self):
+        return self._labels
+
+    @property
+    def weights(self):
+        return self._weights
