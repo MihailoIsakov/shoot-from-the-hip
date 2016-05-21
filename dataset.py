@@ -11,6 +11,8 @@ class CommentDataset(object):
         Setup training and test sets.
         Should check if labels are numpy arrays, and cast them if needed.
         """
+        self.vectorizer = None
+
         self._comments_train = comments_train
         self._comments_test = comments_test
         self.X_train = None
@@ -24,7 +26,7 @@ class CommentDataset(object):
         if not isinstance(self.y_test, np.ndarray):
             self.y_test = np.array(labels_test)
 
-    def vectorize(self, min_count=2, ngram_range=2):
+    def vectorize_fit(self, min_count=2, ngram_range=2):
         """
         Fit the vectorizer to the training set,
         transform the test set
@@ -33,7 +35,7 @@ class CommentDataset(object):
 
         # build tf-idf vectorizer which uses unigrams and bigrams.
         # uses words with 2+ occurances as features
-        vectorizer = TfidfVectorizer(
+        self.vectorizer = TfidfVectorizer(
             strip_accents="unicode",
             lowercase=True,
             ngram_range=(1, ngram_range),
@@ -42,16 +44,16 @@ class CommentDataset(object):
             smooth_idf=True,
             use_idf=True,
             stop_words=croatian_stop_words)
-        
+
         # vectorize the text, convert to dense matrix
-        self.X_train = vectorizer.fit_transform(self._comments_train).todense()
-        self.X_test = vectorizer.transform(self._comments_test).todense()
-    
-    @staticmethod
-    def round_y(y_pred):
+        self.X_train = self.vectorizer.fit_transform(self._comments_train)
+        self.X_test = self.vectorizer.transform(self._comments_test)
+
+    def vectorize_transform(self, comments):
         """
-        Round probabilities predictions to enable metrics
+        Vectorize the comments with the fitted vectorizer
         """
+        return self.vectorizer.transform(comments)
 
     def test_prediction(self, y_pred, set="test", print_options=["accuracy", "precision", "recall"]):
         # round the y predictions if they are probabilites and not classes
@@ -74,3 +76,47 @@ class CommentDataset(object):
             print "\tConfusion matrix on {} set: {}".format(set, confusion)
 
         return values
+
+    def test_prediction_above(self, y_pred, threshold, set="test", print_options=["accuracy", "precision", "recall"]):
+        indices = np.argwhere(np.logical_or(y_pred < 1 - threshold, y_pred > threshold))
+        if len(indices) == 0:
+            return [np.NaN, np.NaN, np.NaN, [[0, 0], [0, 0]]]
+
+        y_pred = y_pred[indices]
+        y_pred = np.round(y_pred).astype(np.int)
+
+        y_true = self.y_test if set=="test" else self.y_train
+        y_true = y_true[indices]
+
+        accuracy = accuracy_score(y_true, y_pred)
+        precision = precision_score(y_true, y_pred)
+        recall = recall_score(y_true, y_pred)
+        confusion = confusion_matrix(y_true, y_pred)
+        values = [accuracy, precision, recall, confusion]
+
+        if "accuracy" in print_options:
+            print "\tAccuracy on {} set: {}".format(set, accuracy)
+        if "precision" in print_options:
+            print "\tPrecision on {} set: {}".format(set, precision)
+        if "recall" in print_options:
+            print "\tRecall on {} set: {}".format(set, recall)
+        if "confusion" in print_options:
+            print "\tConfusion matrix on {} set: {}".format(set, confusion)
+
+        return values
+
+
+class UnlabeledDataset(object):
+
+    def __init__(self, comments):
+        """
+        A dataset containing only unlabeled comments, and their vectors.
+        Relies on an outside vectorizer to create vectors.
+        Contains 
+        """
+        self._comments = comments
+        self.X = None
+
+    def vectorize_transform(self, vectorizer):
+        self.X = vectorizer.transform(self._comments)
+        return self.X
