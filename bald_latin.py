@@ -35,11 +35,11 @@ def remove_cyrillic_and_accents(comments, labels=None, remove_accents=True):
     else:
         _labels = labels
 
-    comments, labels = remove_cyrillic_comments(comments, _labels)
+    comments, _labels = remove_cyrillic_comments(comments, _labels)
     if remove_accents:
         comments = remove_serbian_accents(comments)
 
     if labels:
-        return comments, labels
+        return comments, _labels
     else:
         return comments
