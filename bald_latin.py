@@ -3,8 +3,6 @@ cyrillic = set(u"АаБбВвГгДдЂђЕеЖжЗзИиЈјКкЛлЉљМмН�
 
 
 def remove_cyrillic_comments(comments, labels, print_perc=True):
-    cyrillic_count = 0.0
-
     clean_coms = []
     clean_labels = []
 
@@ -12,8 +10,6 @@ def remove_cyrillic_comments(comments, labels, print_perc=True):
         if not bool(set(comment.decode('utf8')).intersection(cyrillic)):
             clean_coms.append(comment)
             clean_labels.append(label)
-        else:
-            cyrillic_count += 1
 
     return clean_coms, clean_labels
 
@@ -35,10 +31,15 @@ def remove_serbian_accents(comments):
 
 def remove_cyrillic_and_accents(comments, labels=None, remove_accents=True):
     if labels is None:
-        labels = range(len(comments))
+        _labels = range(len(comments))
+    else:
+        _labels = labels
 
-    comments, labels = remove_cyrillic_comments(comments, labels)
+    comments, labels = remove_cyrillic_comments(comments, _labels)
     if remove_accents:
         comments = remove_serbian_accents(comments)
 
-    return comments, labels
+    if labels:
+        return comments, labels
+    else:
+        return comments

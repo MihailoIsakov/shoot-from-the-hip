@@ -23,7 +23,7 @@ class Dataset(object):
         if not isinstance(self.y_test, np.ndarray):
             self.y_test = np.array(labels_test)
 
-    def test_prediction(self, y_pred, set="test", print_options=["accuracy", "precision", "recall"]):
+    def test_prediction(self, y_pred, set="test"):
         # round the y predictions if they are probabilites and not classes
         y_pred = np.round(y_pred).astype(np.int)
         y_true = self.y_test if set=="test" else self.y_train
