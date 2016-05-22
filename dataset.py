@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.metrics import accuracy_score, precision_score, recall_score, confusion_matrix
 
 
-class CommentDataset(object):
+class Dataset(object):
 
     def __init__(self, comments_train, labels_train, comments_test, labels_test):
         """
@@ -74,25 +74,46 @@ class CommentDataset(object):
         return values
 
 
+class FoldDataset(Dataset):
+
+    def __init__(self, comments, stemmed, labels, train_indices, test_indices):
+        stemmed_train = [stemmed[x] for x in train_indices]
+        labels_train   = [labels[x] for x in train_indices]
+        stemmed_test  = [stemmed[x] for x in test_indices]
+        labels_test    = [labels[x] for x in test_indices]
+        comments_train = [comments[x] for x in train_indices]
+        comments_test = [comments[x] for x in train_indices]
+
+        super(self).__init__(stemmed_train, labels_train, stemmed_test, labels_test)
+
+        self._comments_train = comments_train
+        self._comments_test  = comments_test
+
+
 class UnlabeledDataset(object):
     """
     Dataset containing the scraped comments, their TF-IDF sparse matrix,
     and classified bot comments from the dataset.
     """
 
-    def __init__(self, comments):
+    def __init__(self, comments, stemmed):
         """
         A dataset containing only unlabeled comments, and their vectors.
         Relies on an outside vectorizer to create vectors.
         Contains 
         """
         self._comments = comments
+        self._stemmed = stemmed
         self.bots = None
         self.X = None
 
     @property
     def comments(self):
         return self._comments
+
+    @property
+    def stemmed(self):
+        return self._stemmed
 
 
 class CombinedDataset(object):
