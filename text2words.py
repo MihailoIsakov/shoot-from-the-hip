@@ -7,18 +7,22 @@ def load_text_as_unicode(fpath):
     return f.read()
 
 
-def text_balden(text):
+def balden2file(text, fname):
     """
     Remove cyrillic comments and balden accents
     """
     text = text.lower()
     comments = text.split('\n')
     comments = remove_cyrillic_and_accents(comments)
-    return " ".join(comments)
+
+    import codecs
+    with codecs.open(fname, 'w', 'utf-8') as f:
+        for comment in comments:
+            f.write(comment + u"\n")
 
 
 def remove_symbols(text):
-    bad_chars = ['\n', '\t', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', '-', '/', ':', ';', '<', '=', '>', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~']
+    bad_chars = ['\t', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', '-', '/', ':', ';', '<', '=', '>', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~']
     punctuation = ['.', ',', '?', '!']
 
     for char in bad_chars:
@@ -38,7 +42,7 @@ def remove_cyrillic_comments(comments, labels, print_perc=True):
     cyrillic = set(u"АаБбВвГгДдЂђЕеЖжЗзИиЈјКкЛлЉљМмНнЊњОоПпРрСсТтЋћУуФфХхЦцЧчЏџШш")
 
     for comment, label in zip(comments, labels):
-        if not bool(set(comment.decode('utf8')).intersection(cyrillic)):
+        if not bool(set(comment).intersection(cyrillic)):
             clean_coms.append(comment)
             clean_labels.append(label)
 
@@ -48,7 +52,7 @@ def remove_cyrillic_comments(comments, labels, print_perc=True):
 def remove_serbian_accents(comments):
     bald = []
     for comment in comments:
-        bald_comment = (comment.decode('utf8')) \
+        bald_comment = (comment) \
             .replace(u"ć", u"c") \
             .replace(u"č", u"c") \
             .replace(u"š", u"s") \
