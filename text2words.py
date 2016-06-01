@@ -1,43 +1,45 @@
 # -*- coding: utf-8 -*-
 
 
-def load_text_as_unicode(fpath):
-    import codecs
-    f = codecs.open(fpath, 'r', 'utf-8')
-    return f.read()
-
-
-def balden2file(text, fname):
+def balden2file(finput, foutput):
     """
     Remove cyrillic comments and balden accents
     """
+    def load_text_as_unicode(fpath):
+        import codecs
+        f = codecs.open(fpath, 'r', 'utf-8')
+        return f.read()
+
+    text = load_text_as_unicode(finput)
     text = text.lower()
-    text = remove_symbols(text)
+    text = _remove_symbols(text)
     comments = text.split('\n')
-    comments = remove_cyrillic_and_accents(comments)
+    comments = _remove_cyrillic_and_accents(comments)
 
     import codecs
-    with codecs.open(fname, 'w', 'utf-8') as f:
+    with codecs.open(foutput, 'w', 'utf-8') as f:
         for comment in comments:
             f.write(comment + u"\n")
 
 
-def remove_symbols(text):
+def _remove_symbols(text):
     bad_chars = ['\t', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', '-', '/', ':', ';', '<', '=', '>', '@', '[', '\\', ']', '^', '_', '`', '{', '|', '}', '~']
     punctuation = ['.', ',', '?', '!']
 
+    print("Processing: "),
     for char in bad_chars:
-        print "Processing {}".format(char)
+        print(char)
         text = text.replace(char, ' ')
 
+    print("\nProcessing: "),
     for char in punctuation:
-        print "Processing {}".format(char)
+        print(char)
         text = text.replace(char, ' ' + char + ' ')
 
     return text 
 
 
-def remove_cyrillic_and_accents(comments, labels=None, remove_accents=True):
+def _remove_cyrillic_and_accents(comments, labels=None, remove_accents=True):
     """
     Removes any comment containing any cyrillic letter.
     If labels are provided, removes the coresponding labels.
@@ -84,3 +86,10 @@ def remove_cyrillic_and_accents(comments, labels=None, remove_accents=True):
     else:
         return comments
 
+
+if __name__=="__main__":
+    import sys
+    finput = sys.argv[1]
+    foutput = sys.argv[2]
+
+    balden2file(finput, foutput)
